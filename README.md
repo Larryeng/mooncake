@@ -33,3 +33,22 @@ https://你的帳號.github.io/你的repository名稱/#admin
 4. 如果專案啟用了 Email confirmation，註冊後先到信箱驗證，再登入。
 
 Supabase 的 `anon` / publishable key 可以放在前端；請勿把 `service_role` key 或資料庫密碼放入網站。
+
+### Email 驗證網址
+
+在 Supabase Dashboard 的 **Authentication → URL Configuration** 設定：
+
+- **Site URL**
+
+  ```text
+  https://larryeng.github.io/mooncake/
+  ```
+
+- **Redirect URLs** 新增：
+
+  ```text
+  https://larryeng.github.io/mooncake/
+  http://localhost:3000/
+  ```
+
+網站會依照目前開啟的網址設定 Email 驗證回跳位置。正式網站請從 GitHub Pages 網址註冊；如果收到 `otp_expired`，代表驗證信已過期或已被使用，請重新註冊或重新寄送驗證信。

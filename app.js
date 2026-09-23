@@ -109,7 +109,12 @@ async function handleAuth(event) {
   try {
     if (authMode === "register") {
       if (!name) return showAuthMessage("請填寫你的稱呼。");
-      const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { display_name: name } } });
+      const redirectTo = `${window.location.origin}${window.location.pathname}`;
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: { data: { display_name: name }, emailRedirectTo: redirectTo }
+      });
       if (error) throw error;
       if (!data.session) return showAuthMessage("註冊成功，請先到信箱完成驗證，再登入。");
     } else {
@@ -152,3 +157,12 @@ $("#item-form").addEventListener("submit", async (event) => {
 document.querySelectorAll(".filter-button").forEach((button) => button.addEventListener("click", () => { activeFilter = button.dataset.filter; document.querySelectorAll(".filter-button").forEach((entry) => entry.classList.toggle("active", entry === button)); renderItems(); }));
 window.addEventListener("hashchange", () => currentSession && (location.hash === "#admin" ? renderAdmin() : enterApp()));
 supabaseClient.auth.onAuthStateChange((_event, session) => { if (_event === "INITIAL_SESSION" || _event === "SIGNED_IN" || _event === "SIGNED_OUT") openSession(session); });
+
+const authError = new URLSearchParams(window.location.hash.slice(1));
+if (authError.get("error") === "access_denied") {
+  const description = authError.get("error_code") === "otp_expired"
+    ? "驗證連結已過期或已使用，請重新註冊或從 Supabase 重新寄送驗證信。"
+    : authError.get("error_description") || "Email 驗證失敗，請重新操作。";
+  history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+  showAuthMessage(description);
+}
