@@ -1,6 +1,6 @@
 const SUPABASE_URL = "https://yleovqjmdgoafgfiohxk.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsZW92cWptZGdvYWZnZmlvaHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxODA3NjEsImV4cCI6MjEwNTc1Njc2MX0.6HH0jJ9ejh6bfBoyMD0OHlXMBhRZ2YoxpcoOHG6x2H8";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const categoryMeta = {
   food: { label: "食材", emoji: "🍢" }, drink: { label: "飲品", emoji: "🥤" },
   gear: { label: "器材", emoji: "🧺" }, other: { label: "其他", emoji: "✨" }
@@ -27,13 +27,13 @@ function switchAuth(mode) {
 }
 async function logAction(action, detail) {
   if (!currentSession) return;
-  const { error } = await supabase.from("activity_logs").insert({ actor_id: currentSession.user.id, action, detail });
+  const { error } = await supabaseClient.from("activity_logs").insert({ actor_id: currentSession.user.id, action, detail });
   if (error) throw error;
 }
 async function loadData() {
   const [{ data: itemData, error: itemError }, { data: logData, error: logError }] = await Promise.all([
-    supabase.from("items").select("*").order("created_at", { ascending: false }),
-    profile?.is_admin ? supabase.from("activity_logs").select("id, action, detail, created_at, profiles(display_name, email)").order("created_at", { ascending: false }) : Promise.resolve({ data: [], error: null })
+    supabaseClient.from("items").select("*").order("created_at", { ascending: false }),
+    profile?.is_admin ? supabaseClient.from("activity_logs").select("id, action, detail, created_at, profiles(display_name, email)").order("created_at", { ascending: false }) : Promise.resolve({ data: [], error: null })
   ]);
   if (itemError) throw itemError;
   if (logError) throw logError;
@@ -58,13 +58,13 @@ function renderItems() {
   $("#all-filter-count").textContent = items.length;
 }
 async function claimItem(id) {
-  const { error } = await supabase.rpc("claim_item", { item_id: id });
+  const { error } = await supabaseClient.rpc("claim_item", { item_id: id });
   if (error) return showError(error);
   await logAction("認領物品", `認領「${items.find((item) => item.id === id)?.name || "物品"}」`);
   await refresh();
 }
 async function cancelClaim(id) {
-  const { error } = await supabase.rpc("unclaim_item", { item_id: id });
+  const { error } = await supabaseClient.rpc("unclaim_item", { item_id: id });
   if (error) return showError(error);
   await logAction("取消認領", `取消認領「${items.find((item) => item.id === id)?.name || "物品"}」`);
   await refresh();
@@ -72,7 +72,7 @@ async function cancelClaim(id) {
 async function deleteItem(id) {
   const item = items.find((entry) => entry.id === id);
   if (!item || !window.confirm(`確定要刪除「${item.name}」嗎？`)) return;
-  const { error } = await supabase.from("items").delete().eq("id", id);
+  const { error } = await supabaseClient.from("items").delete().eq("id", id);
   if (error) return showError(error);
   await logAction("刪除物品", `刪除「${item.name}」`);
   await refresh();
@@ -86,7 +86,7 @@ function enterApp() {
   $("#auth-view").classList.add("hidden"); $("#admin-view").classList.add("hidden"); $("#app-view").classList.remove("hidden");
   $("#user-area").innerHTML = `<span>你好，<b>${escapeHtml(profile.display_name)}</b></span><button class="logout-button" id="logout-button">登出</button>`;
   $("#greeting").textContent = `嗨，${escapeHtml(profile.display_name)}`;
-  $("#logout-button").addEventListener("click", async () => { await logAction("登出", "登出了網站"); await supabase.auth.signOut(); });
+  $("#logout-button").addEventListener("click", async () => { await logAction("登出", "登出了網站"); await supabaseClient.auth.signOut(); });
   renderItems();
 }
 function renderAdmin() {
@@ -109,11 +109,11 @@ async function handleAuth(event) {
   try {
     if (authMode === "register") {
       if (!name) return showAuthMessage("請填寫你的稱呼。");
-      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { display_name: name } } });
+      const { data, error } = await supabaseClient.auth.signUp({ email, password, options: { data: { display_name: name } } });
       if (error) throw error;
       if (!data.session) return showAuthMessage("註冊成功，請先到信箱完成驗證，再登入。");
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) throw error;
     }
     showAuthMessage("");
@@ -122,7 +122,7 @@ async function handleAuth(event) {
 async function openSession(session) {
   currentSession = session;
   if (!session) { profile = null; $("#user-area").innerHTML = ""; $("#app-view").classList.add("hidden"); $("#admin-view").classList.add("hidden"); $("#auth-view").classList.remove("hidden"); return; }
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", session.user.id).single();
+  const { data, error } = await supabaseClient.from("profiles").select("*").eq("id", session.user.id).single();
   if (error) return showError(error);
   profile = data;
   try { await loadData(); } catch (error) { return showError(error); }
@@ -130,8 +130,8 @@ async function openSession(session) {
   subscribeToChanges();
 }
 function subscribeToChanges() {
-  if (realtimeChannel) supabase.removeChannel(realtimeChannel);
-  realtimeChannel = supabase.channel("moon-shared-data")
+  if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
+  realtimeChannel = supabaseClient.channel("moon-shared-data")
     .on("postgres_changes", { event: "*", schema: "public", table: "items" }, () => refresh())
     .on("postgres_changes", { event: "*", schema: "public", table: "activity_logs" }, () => profile?.is_admin && refresh())
     .subscribe();
@@ -144,11 +144,11 @@ $("#item-modal").addEventListener("click", (event) => { if (event.target === $("
 $("#item-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   const item = { name: $("#item-name").value.trim(), category: $("#item-category").value, quantity: $("#item-quantity").value.trim(), note: $("#item-note").value.trim(), created_by: currentSession.user.id };
-  const { error } = await supabase.from("items").insert(item);
+  const { error } = await supabaseClient.from("items").insert(item);
   if (error) return showError(error);
   await logAction("新增物品", `新增「${item.name}」`);
   $("#item-modal").classList.add("hidden"); $("#item-form").reset(); await refresh();
 });
 document.querySelectorAll(".filter-button").forEach((button) => button.addEventListener("click", () => { activeFilter = button.dataset.filter; document.querySelectorAll(".filter-button").forEach((entry) => entry.classList.toggle("active", entry === button)); renderItems(); }));
 window.addEventListener("hashchange", () => currentSession && (location.hash === "#admin" ? renderAdmin() : enterApp()));
-supabase.auth.onAuthStateChange((_event, session) => { if (_event === "INITIAL_SESSION" || _event === "SIGNED_IN" || _event === "SIGNED_OUT") openSession(session); });
+supabaseClient.auth.onAuthStateChange((_event, session) => { if (_event === "INITIAL_SESSION" || _event === "SIGNED_IN" || _event === "SIGNED_OUT") openSession(session); });
