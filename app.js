@@ -84,6 +84,13 @@ function cancelClaim(id) {
   renderItems();
 }
 function escapeHtml(text) { return text.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char])); }
+function deleteItem(id) {
+  const item = items.find((entry) => entry.id === id);
+  if (!item || !window.confirm(`確定要刪除「${item.name}」嗎？`)) return;
+  items = items.filter((entry) => entry.id !== id);
+  logAction("刪除物品", `刪除「${item.name}」`);
+  renderAdmin();
+}
 document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => switchAuth(tab.dataset.auth)));
 $("#auth-form").addEventListener("submit", (event) => {
   event.preventDefault();
@@ -135,6 +142,12 @@ function renderAdmin() {
       <div><strong>${escapeHtml(entry.action)}</strong><p>${escapeHtml(entry.actor)} · ${escapeHtml(entry.detail)}</p></div>
       <time>${new Date(entry.at).toLocaleString("zh-TW", { dateStyle: "short", timeStyle: "short" })}</time>
     </article>`).join("") : `<div class="empty-state">還沒有任何操作紀錄。</div>`;
+  $("#admin-items-list").innerHTML = items.length ? items.map((item) => {
+    const meta = categoryMeta[item.category] || categoryMeta.other;
+    const claimedText = item.claimedBy ? "已認領" : "尚未認領";
+    return `<article class="admin-item-row"><div class="item-emoji">${meta.emoji}</div><div><strong>${escapeHtml(item.name)}</strong><p>${meta.label} · ${escapeHtml(item.quantity)} · ${claimedText}</p></div><button class="delete-item-button" data-delete-item="${item.id}">刪除</button></article>`;
+  }).join("") : `<div class="empty-state">目前沒有可管理的攜帶物品。</div>`;
+  document.querySelectorAll("[data-delete-item]").forEach((button) => button.addEventListener("click", () => deleteItem(Number(button.dataset.deleteItem))));
 }
 $("#clear-log-button").addEventListener("click", () => {
   if (!activityLog.length || !window.confirm("確定要清除目前瀏覽器的所有 Log 嗎？")) return;
