@@ -1,10 +1,4 @@
-const seedItems = [
-  { id: 1, name: "經典台式香腸", category: "food", quantity: "2 包", note: "炭火烤最香", claimedBy: null },
-  { id: 2, name: "玉米與杏鮑菇", category: "food", quantity: "各 10 份", note: "蔬菜也要吃得飽", claimedBy: null },
-  { id: 3, name: "冰涼無糖茶", category: "drink", quantity: "2 大瓶", note: "綠茶或烏龍茶都可以", claimedBy: null },
-  { id: 4, name: "折疊桌椅", category: "gear", quantity: "1 組", note: "方便放食材的桌子", claimedBy: null },
-  { id: 5, name: "木炭與點火用品", category: "gear", quantity: "1 份", note: "別忘了帶長柄打火機", claimedBy: null }
-];
+const seedItems = [];
 const categoryMeta = {
   food: { label: "食材", emoji: "🍢" }, drink: { label: "飲品", emoji: "🥤" },
   gear: { label: "器材", emoji: "🧺" }, other: { label: "其他", emoji: "✨" }
@@ -13,7 +7,11 @@ let authMode = "login";
 let activeFilter = "all";
 let currentUser = JSON.parse(localStorage.getItem("moon-current-user") || "null");
 let users = JSON.parse(localStorage.getItem("moon-users") || "[]");
-let items = JSON.parse(localStorage.getItem("moon-items") || "null") || seedItems;
+const storedItems = JSON.parse(localStorage.getItem("moon-items") || "null");
+const legacySeedIds = new Set([1, 2, 3, 4, 5]);
+let items = Array.isArray(storedItems)
+  ? storedItems.filter((item) => !legacySeedIds.has(item.id))
+  : seedItems;
 let activityLog = JSON.parse(localStorage.getItem("moon-activity-log") || "[]");
 
 const $ = (selector) => document.querySelector(selector);
