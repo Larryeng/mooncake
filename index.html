@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#182322" />
+    <title>月下帶什麼｜中秋節攜帶物品清單</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+TC:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@500;600;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <div class="background-orb orb-one"></div>
+    <div class="background-orb orb-two"></div>
+    <header class="site-header">
+      <a class="brand" href="#">
+        <span class="brand-mark">☾</span>
+        <span><strong>月下帶什麼</strong><small>中秋聚會清單</small></span>
+      </a>
+      <div id="user-area"></div>
+    </header>
+
+    <main>
+      <section id="auth-view" class="auth-view">
+        <div class="intro-copy">
+          <p class="eyebrow">MID-AUTUMN GATHERING · 2026</p>
+          <h1>一起準備，<br /><em>月下剛剛好。</em></h1>
+          <p class="intro-text">建立一份大家都看得懂的中秋攜帶清單。認領一樣物品，就少一份遺漏，多一點團聚的從容。</p>
+          <div class="feature-row">
+            <span>✦ 即時掌握準備進度</span>
+            <span>✦ 找到自己的攜帶分類</span>
+          </div>
+        </div>
+        <div class="auth-card">
+          <div class="tabs">
+            <button class="tab active" data-auth="login">登入帳號</button>
+            <button class="tab" data-auth="register">建立帳號</button>
+          </div>
+          <form id="auth-form">
+            <div id="name-field" class="field hidden">
+              <label for="auth-name">你的稱呼</label>
+              <input id="auth-name" type="text" placeholder="例如：小美" autocomplete="name" />
+            </div>
+            <div class="field">
+              <label for="auth-email">電子信箱</label>
+              <input id="auth-email" type="email" placeholder="you@example.com" required autocomplete="email" />
+            </div>
+            <div class="field">
+              <label for="auth-password">密碼</label>
+              <input id="auth-password" type="password" placeholder="至少 6 個字元" minlength="6" required autocomplete="current-password" />
+            </div>
+            <p id="auth-message" class="form-message" role="alert"></p>
+            <button class="primary-button full-width" type="submit"><span id="auth-submit-label">登入我的清單</span><span>→</span></button>
+          </form>
+          <p class="privacy-note">資料只儲存在此瀏覽器，放心開始規劃你的聚會。</p>
+        </div>
+      </section>
+
+      <section id="app-view" class="app-view hidden">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">YOUR GATHERING BOARD</p>
+            <h1><span id="greeting">晚安</span>，這次一起烤得剛剛好。</h1>
+          </div>
+          <button id="add-top-button" class="primary-button"><span>＋</span> 新增攜帶物品</button>
+        </div>
+        <div class="event-banner">
+          <div class="event-detail">
+            <span class="event-icon">◷</span>
+            <div><span>烤肉時間</span><strong>9/25</strong></div>
+          </div>
+          <div class="event-divider"></div>
+          <div class="event-detail">
+            <span class="event-icon">⌖</span>
+            <div><span>烤肉地點</span><strong>許安祐家</strong></div>
+          </div>
+          <span class="event-moon" aria-hidden="true">☾</span>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card stat-main">
+            <div class="stat-icon">◒</div>
+            <div><span class="stat-label">整體準備進度</span><strong id="progress-percent">0%</strong></div>
+            <div class="progress-track"><div id="progress-bar" class="progress-fill"></div></div>
+            <p><span id="claimed-count">0</span> / <span id="total-count">0</span> 項已有人認領</p>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon warm">♧</div>
+            <span class="stat-label">尚未認領</span>
+            <strong id="unclaimed-count" class="stat-number">0</strong>
+            <p>項物品等待加入</p>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon mint">⌁</div>
+            <span class="stat-label">我的認領</span>
+            <strong id="my-count" class="stat-number">0</strong>
+            <p>項由你帶來</p>
+          </article>
+        </div>
+
+        <div class="content-layout">
+          <section class="list-panel">
+            <div class="section-header">
+              <div><h2>這次要帶什麼？</h2><p>挑一樣你方便準備的，讓大家一起完成清單。</p></div>
+              <div class="filter-wrap">
+                <button class="filter-button active" data-filter="all">全部 <span id="all-filter-count">0</span></button>
+                <button class="filter-button" data-filter="food">食材</button>
+                <button class="filter-button" data-filter="drink">飲品</button>
+                <button class="filter-button" data-filter="gear">器材</button>
+                <button class="filter-button" data-filter="other">其他</button>
+              </div>
+            </div>
+            <div id="items-list" class="items-list"></div>
+          </section>
+          <aside class="tip-card">
+            <div class="moon-decoration">☾</div>
+            <p class="eyebrow">A LITTLE REMINDER</p>
+            <h3>把團聚放在<br />清單的最前面。</h3>
+            <p>物品可以互相支援，重要的是每個人都一起坐在月光下。</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="admin-view" class="admin-view hidden">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">LOCAL ACTIVITY LOG</p>
+            <h1>行動紀錄後台</h1>
+          </div>
+          <div class="admin-actions">
+            <a class="secondary-button" href="#">← 回到清單</a>
+            <button id="clear-log-button" class="danger-button">清除紀錄</button>
+          </div>
+        </div>
+        <div class="admin-notice">這是純前端版本，紀錄只保存在目前這台瀏覽器的 localStorage，不會跨裝置同步，也不能當作安全的管理後台。</div>
+        <div class="log-summary">
+          <article class="stat-card"><span class="stat-label">紀錄總數</span><strong id="log-count" class="stat-number">0</strong><p>筆操作紀錄</p></article>
+          <article class="stat-card"><span class="stat-label">目前帳號</span><strong id="user-count" class="stat-number">0</strong><p>個本機帳號</p></article>
+          <article class="stat-card"><span class="stat-label">清單物品</span><strong id="admin-item-count" class="stat-number">0</strong><p>項攜帶物品</p></article>
+        </div>
+        <div class="log-panel">
+          <div class="log-panel-heading"><h2>誰做了什麼</h2><span id="log-status"></span></div>
+          <div id="activity-log"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="item-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <button class="close-button" id="close-modal" aria-label="關閉">×</button>
+        <p class="eyebrow">ADD TO THE TABLE</p>
+        <h2>新增攜帶物品</h2>
+        <p class="modal-subtitle">告訴大家你希望這次聚會多一點什麼。</p>
+        <form id="item-form">
+          <div class="field"><label for="item-name">物品名稱</label><input id="item-name" type="text" placeholder="例如：黑胡椒雞翅" required /></div>
+          <div class="form-two-columns">
+            <div class="field"><label for="item-category">分類</label><select id="item-category"><option value="food">食材</option><option value="drink">飲品</option><option value="gear">器材</option><option value="other">其他</option></select></div>
+            <div class="field"><label for="item-quantity">需要數量</label><input id="item-quantity" type="text" placeholder="例如：2 盒" required /></div>
+          </div>
+          <div class="field"><label for="item-note">備註（選填）</label><input id="item-note" type="text" placeholder="例如：請買無糖、冰的" /></div>
+          <button class="primary-button full-width" type="submit">加入共同清單 <span>→</span></button>
+        </form>
+      </div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
