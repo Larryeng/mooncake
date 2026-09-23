@@ -15,7 +15,14 @@ let realtimeChannel = null;
 const $ = (selector) => document.querySelector(selector);
 
 function showAuthMessage(message = "") { $("#auth-message").textContent = message; }
-function showError(error) { showAuthMessage(error?.message || "目前無法完成操作，請稍後再試。"); }
+function showError(error) {
+  const message = error?.message || "";
+  if (message.toLowerCase().includes("rate limit")) {
+    showAuthMessage("Email 寄送次數已達上限，請先到 Supabase 關閉 Email Confirm，或稍後再試。");
+    return;
+  }
+  showAuthMessage(message || "目前無法完成操作，請稍後再試。");
+}
 function escapeHtml(text = "") { return String(text).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char])); }
 function switchAuth(mode) {
   authMode = mode;
