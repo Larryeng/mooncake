@@ -77,17 +77,17 @@ function renderItems() {
 async function claimItem(id) {
   const { error } = await supabaseClient.rpc("claim_item", { item_id: id });
   if (error) return showError(error);
-  await logAction("認領物品", `認領「${items.find((item) => item.id === id)?.name || "物品"}」`);
+  await logAction("認領物品", `認領「${items.find((item) => String(item.id) === String(id))?.name || "物品"}」`);
   await refresh();
 }
 async function cancelClaim(id) {
   const { error } = await supabaseClient.rpc("unclaim_item", { item_id: id });
   if (error) return showError(error);
-  await logAction("取消認領", `取消認領「${items.find((item) => item.id === id)?.name || "物品"}」`);
+  await logAction("取消認領", `取消認領「${items.find((item) => String(item.id) === String(id))?.name || "物品"}」`);
   await refresh();
 }
 async function deleteItem(id) {
-  const item = items.find((entry) => entry.id === id);
+  const item = items.find((entry) => String(entry.id) === String(id));
   if (!item || !window.confirm(`確定要刪除「${item.name}」嗎？`)) return;
   showAdminMessage("正在刪除，請稍候…");
   const { error } = await supabaseClient.from("items").delete().eq("id", id);
@@ -108,7 +108,7 @@ async function updateQuantity(id, input) {
   }
   const { error } = await supabaseClient.rpc("admin_update_quantity", { item_id: id, new_quantity: quantity });
   if (error) return showError(error);
-  await logAction("修改數量", `將「${items.find((item) => item.id === id)?.name || "物品"}」數量改為「${quantity}」`);
+  await logAction("修改數量", `將「${items.find((item) => String(item.id) === String(id))?.name || "物品"}」數量改為「${quantity}」`);
   await refresh();
 }
 async function refresh() {
