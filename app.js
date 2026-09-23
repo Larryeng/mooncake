@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://yleovqjmdgoafgfiohxk.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzIiwicmVmIjoieWxlb3Zxam1kZG9hZmdmaW9oeGsiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTc5MDE4MDc2MSwiZXhwIjoyMTA1NzU2NzYxfQ.6HH0jJ9ejh6bfBoyMD0OHlXMBhRZ2YoxpcoOHG6x2H8";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlsZW92cWptZGdvYWZnZmlvaHhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAxODA3NjEsImV4cCI6MjEwNTc1Njc2MX0.6HH0jJ9ejh6bfBoyMD0OHlXMBhRZ2YoxpcoOHG6x2H8";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const categoryMeta = {
   food: { label: "食材", emoji: "🍢" }, drink: { label: "飲品", emoji: "🥤" },
