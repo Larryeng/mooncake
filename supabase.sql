@@ -47,6 +47,19 @@ begin
   if result.id is null then raise exception '只能取消自己認領的物品'; end if;
   return result;
 end; $$;
+create or replace function public.admin_delete_item(item_id bigint) returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from public.profiles where id = auth.uid() and is_admin) then raise exception '只有管理員可以刪除物品'; end if;
+  delete from public.items where id = item_id;
+end; $$;
+create or replace function public.admin_update_quantity(item_id bigint, new_quantity text) returns public.items language plpgsql security definer set search_path = public as $$
+declare result public.items;
+begin
+  if not exists (select 1 from public.profiles where id = auth.uid() and is_admin) then raise exception '只有管理員可以修改數量'; end if;
+  update public.items set quantity = trim(new_quantity) where id = item_id returning * into result;
+  if result.id is null then raise exception '物品不存在'; end if;
+  return result;
+end; $$;
 
 alter table public.profiles enable row level security;
 alter table public.items enable row level security;
@@ -55,10 +68,13 @@ create policy "profiles are readable by signed in users" on public.profiles for 
 create policy "items are readable by signed in users" on public.items for select to authenticated using (true);
 create policy "signed in users can add items" on public.items for insert to authenticated with check (created_by = auth.uid());
 create policy "admins can delete items" on public.items for delete to authenticated using ((select is_admin from public.profiles where id = auth.uid()));
+create policy "admins can update items" on public.items for update to authenticated using ((select is_admin from public.profiles where id = auth.uid())) with check ((select is_admin from public.profiles where id = auth.uid()));
 create policy "users can read logs" on public.activity_logs for select to authenticated using ((select is_admin from public.profiles where id = auth.uid()));
 create policy "signed in users can add logs" on public.activity_logs for insert to authenticated with check (actor_id = auth.uid());
 grant execute on function public.claim_item(bigint) to authenticated;
 grant execute on function public.unclaim_item(bigint) to authenticated;
+grant execute on function public.admin_delete_item(bigint) to authenticated;
+grant execute on function public.admin_update_quantity(bigint, text) to authenticated;
 alter table public.items replica identity full;
 do $$ begin
   alter publication supabase_realtime add table public.items;

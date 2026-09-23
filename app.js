@@ -83,9 +83,20 @@ async function cancelClaim(id) {
 async function deleteItem(id) {
   const item = items.find((entry) => entry.id === id);
   if (!item || !window.confirm(`確定要刪除「${item.name}」嗎？`)) return;
-  const { error } = await supabaseClient.from("items").delete().eq("id", id);
+  const { error } = await supabaseClient.rpc("admin_delete_item", { item_id: id });
   if (error) return showError(error);
   await logAction("刪除物品", `刪除「${item.name}」`);
+  await refresh();
+}
+async function updateQuantity(id, input) {
+  const quantity = input.value.trim();
+  if (!quantity) {
+    input.focus();
+    return;
+  }
+  const { error } = await supabaseClient.rpc("admin_update_quantity", { item_id: id, new_quantity: quantity });
+  if (error) return showError(error);
+  await logAction("修改數量", `將「${items.find((item) => item.id === id)?.name || "物品"}」數量改為「${quantity}」`);
   await refresh();
 }
 async function refresh() {
@@ -111,8 +122,9 @@ function renderAdmin() {
   $("#admin-item-count").textContent = items.length;
   $("#log-status").textContent = activityLog.length ? "最新紀錄在最上方" : "目前還沒有紀錄";
   $("#activity-log").innerHTML = activityLog.length ? activityLog.map((entry) => `<article class="log-entry"><div class="log-dot"></div><div><strong>${escapeHtml(entry.action)}</strong><p>${escapeHtml(entry.profiles?.display_name || "未知使用者")} (${escapeHtml(entry.profiles?.email || "")}) · ${escapeHtml(entry.detail)}</p></div><time>${new Date(entry.created_at).toLocaleString("zh-TW", { dateStyle: "short", timeStyle: "short" })}</time></article>`).join("") : `<div class="empty-state">還沒有任何操作紀錄。</div>`;
-  $("#admin-items-list").innerHTML = items.length ? items.map((item) => { const meta = categoryMeta[item.category] || categoryMeta.other; return `<article class="admin-item-row"><div class="item-emoji">${meta.emoji}</div><div><strong>${escapeHtml(item.name)}</strong><p>${meta.label} · ${escapeHtml(item.quantity)} · ${item.claimed_by ? "已認領" : "尚未認領"}</p></div><button class="delete-item-button" data-delete-item="${item.id}">刪除</button></article>`; }).join("") : `<div class="empty-state">目前沒有可管理的攜帶物品。</div>`;
+  $("#admin-items-list").innerHTML = items.length ? items.map((item) => { const meta = categoryMeta[item.category] || categoryMeta.other; return `<article class="admin-item-row"><div class="item-emoji">${meta.emoji}</div><div><strong>${escapeHtml(item.name)}</strong><p>${meta.label} · ${item.claimed_by ? "已認領" : "尚未認領"}</p><div class="quantity-editor"><label for="quantity-${item.id}">數量</label><input id="quantity-${item.id}" data-quantity-input="${item.id}" value="${escapeHtml(item.quantity)}"><button class="save-quantity-button" data-save-quantity="${item.id}">儲存</button></div></div><button class="delete-item-button" data-delete-item="${item.id}">刪除</button></article>`; }).join("") : `<div class="empty-state">目前沒有可管理的攜帶物品。</div>`;
   document.querySelectorAll("[data-delete-item]").forEach((button) => button.addEventListener("click", () => deleteItem(button.dataset.deleteItem)));
+  document.querySelectorAll("[data-save-quantity]").forEach((button) => button.addEventListener("click", () => updateQuantity(button.dataset.saveQuantity, document.querySelector(`[data-quantity-input="${button.dataset.saveQuantity}"]`))));
 }
 async function handleAuth(event) {
   event.preventDefault();
@@ -165,6 +177,7 @@ $("#item-form").addEventListener("submit", async (event) => {
   await logAction("新增物品", `新增「${item.name}」`);
   $("#item-modal").classList.add("hidden"); $("#item-form").reset(); await refresh();
 });
+$("#export-pdf-button").addEventListener("click", () => window.print());
 document.querySelectorAll(".filter-button").forEach((button) => button.addEventListener("click", () => { activeFilter = button.dataset.filter; document.querySelectorAll(".filter-button").forEach((entry) => entry.classList.toggle("active", entry === button)); renderItems(); }));
 window.addEventListener("hashchange", () => currentSession && (location.hash === "#admin" ? renderAdmin() : enterApp()));
 supabaseClient.auth.onAuthStateChange((_event, session) => { if (_event === "INITIAL_SESSION" || _event === "SIGNED_IN" || _event === "SIGNED_OUT") openSession(session); });
