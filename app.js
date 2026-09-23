@@ -16,13 +16,19 @@ let realtimeChannel = null;
 const $ = (selector) => document.querySelector(selector);
 
 function showAuthMessage(message = "") { $("#auth-message").textContent = message; }
+function showAdminMessage(message = "") {
+  const element = $("#admin-message");
+  if (element) element.textContent = message;
+}
 function showError(error) {
   const message = error?.message || "";
   if (message.toLowerCase().includes("rate limit")) {
     showAuthMessage("Email 寄送次數已達上限，請先到 Supabase 關閉 Email Confirm，或稍後再試。");
+    showAdminMessage("Email 寄送次數已達上限，請稍後再試。");
     return;
   }
   showAuthMessage(message || "目前無法完成操作，請稍後再試。");
+  showAdminMessage(message || "目前無法完成操作，請稍後再試。");
 }
 function escapeHtml(text = "") { return String(text).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char])); }
 function switchAuth(mode) {
@@ -83,10 +89,16 @@ async function cancelClaim(id) {
 async function deleteItem(id) {
   const item = items.find((entry) => entry.id === id);
   if (!item || !window.confirm(`確定要刪除「${item.name}」嗎？`)) return;
-  const { error } = await supabaseClient.rpc("admin_delete_item", { item_id: id });
+  showAdminMessage("正在刪除，請稍候…");
+  const { error } = await supabaseClient.from("items").delete().eq("id", id);
   if (error) return showError(error);
-  await logAction("刪除物品", `刪除「${item.name}」`);
-  await refresh();
+  try {
+    await logAction("刪除物品", `刪除「${item.name}」`);
+    await refresh();
+    showAdminMessage(`已刪除「${item.name}」。`);
+  } catch (error) {
+    showError(error);
+  }
 }
 async function updateQuantity(id, input) {
   const quantity = input.value.trim();
@@ -117,6 +129,7 @@ function renderAdmin() {
     showAuthMessage("此帳號沒有後台權限。請使用管理員帳號登入。"); return;
   }
   $("#auth-view").classList.add("hidden"); $("#app-view").classList.add("hidden"); $("#admin-view").classList.remove("hidden");
+  showAdminMessage("");
   $("#user-area").innerHTML = `<span>管理員：<b>${escapeHtml(profile.display_name)}</b></span><a class="logout-button" href="#">回到清單</a>`;
   $("#log-count").textContent = activityLog.length; $("#user-count").textContent = userCount;
   $("#admin-item-count").textContent = items.length;
