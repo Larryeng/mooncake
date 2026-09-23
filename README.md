@@ -17,11 +17,19 @@
 https://你的帳號.github.io/你的repository名稱/#admin
 ```
 
-## 目前版本的資料限制
+## Supabase 設定
 
-這是 GitHub Pages 純前端版本，帳號、清單與 Activity Log 都保存於使用者目前瀏覽器的 `localStorage`：
+網站使用 Supabase Auth、Postgres 與 Realtime，帳號、清單、認領與操作紀錄可以跨裝置同步。
 
-- 同一台裝置、同一個瀏覽器可以保留資料。
-- 不同使用者的資料不會跨裝置同步。
-- `#admin` 不是安全的管理員權限，只是同一瀏覽器的管理檢視頁。
-- 若要真正跨使用者共享資料、驗證管理員身分與集中式 Log，需要接上 Supabase、Firebase 或其他後端服務。
+1. 開啟 Supabase Dashboard 的 **SQL Editor**。
+2. 貼上並執行 [supabase.sql](./supabase.sql) 的完整內容。
+3. 在 SQL 最後的管理員指令中填入你的登入 Email 並執行：
+
+   ```sql
+   update public.profiles set is_admin = true
+   where email = '你的 Email';
+   ```
+
+4. 如果專案啟用了 Email confirmation，註冊後先到信箱驗證，再登入。
+
+Supabase 的 `anon` / publishable key 可以放在前端；請勿把 `service_role` key 或資料庫密碼放入網站。

@@ -54,7 +54,7 @@
             <p id="auth-message" class="form-message" role="alert"></p>
             <button class="primary-button full-width" type="submit"><span id="auth-submit-label">登入我的清單</span><span>→</span></button>
           </form>
-          <p class="privacy-note">資料只儲存在此瀏覽器，放心開始規劃你的聚會。</p>
+          <p class="privacy-note">資料同步至 Supabase，換裝置登入也能看到最新清單。</p>
         </div>
       </section>
 
@@ -126,7 +126,7 @@
       <section id="admin-view" class="admin-view hidden">
         <div class="page-heading">
           <div>
-            <p class="eyebrow">LOCAL ACTIVITY LOG</p>
+            <p class="eyebrow">CLOUD ACTIVITY LOG</p>
             <h1>行動紀錄後台</h1>
           </div>
           <div class="admin-actions">
@@ -134,7 +134,7 @@
             <button id="clear-log-button" class="danger-button">清除紀錄</button>
           </div>
         </div>
-        <div class="admin-notice">這是純前端版本，紀錄只保存在目前這台瀏覽器的 localStorage，不會跨裝置同步，也不能當作安全的管理後台。</div>
+        <div class="admin-notice">資料與操作紀錄已同步至 Supabase。只有設定為管理員的帳號可以查看這個後台。</div>
         <div class="log-summary">
           <article class="stat-card"><span class="stat-label">紀錄總數</span><strong id="log-count" class="stat-number">0</strong><p>筆操作紀錄</p></article>
           <article class="stat-card"><span class="stat-label">目前帳號</span><strong id="user-count" class="stat-number">0</strong><p>個本機帳號</p></article>
@@ -168,6 +168,7 @@
         </form>
       </div>
     </div>
-    <script src="app.js?v=3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js?v=4"></script>
   </body>
 </html>
