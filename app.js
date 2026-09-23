@@ -11,6 +11,7 @@ let currentSession = null;
 let profile = null;
 let items = [];
 let activityLog = [];
+let userCount = 0;
 let realtimeChannel = null;
 const $ = (selector) => document.querySelector(selector);
 
@@ -38,14 +39,17 @@ async function logAction(action, detail) {
   if (error) throw error;
 }
 async function loadData() {
-  const [{ data: itemData, error: itemError }, { data: logData, error: logError }] = await Promise.all([
+  const [{ data: itemData, error: itemError }, { data: logData, error: logError }, { count, error: userError }] = await Promise.all([
     supabaseClient.from("items").select("*").order("created_at", { ascending: false }),
-    profile?.is_admin ? supabaseClient.from("activity_logs").select("id, action, detail, created_at, profiles(display_name, email)").order("created_at", { ascending: false }) : Promise.resolve({ data: [], error: null })
+    profile?.is_admin ? supabaseClient.from("activity_logs").select("id, action, detail, created_at, profiles(display_name, email)").order("created_at", { ascending: false }) : Promise.resolve({ data: [], error: null }),
+    profile?.is_admin ? supabaseClient.from("profiles").select("id", { count: "exact", head: true }) : Promise.resolve({ count: 0, error: null })
   ]);
   if (itemError) throw itemError;
   if (logError) throw logError;
+  if (userError) throw userError;
   items = itemData || [];
   activityLog = logData || [];
+  userCount = count || 0;
 }
 function renderItems() {
   const filtered = items.filter((item) => activeFilter === "all" || item.category === activeFilter);
@@ -103,7 +107,7 @@ function renderAdmin() {
   }
   $("#auth-view").classList.add("hidden"); $("#app-view").classList.add("hidden"); $("#admin-view").classList.remove("hidden");
   $("#user-area").innerHTML = `<span>管理員：<b>${escapeHtml(profile.display_name)}</b></span><a class="logout-button" href="#">回到清單</a>`;
-  $("#log-count").textContent = activityLog.length; $("#user-count").textContent = "雲端帳號";
+  $("#log-count").textContent = activityLog.length; $("#user-count").textContent = userCount;
   $("#admin-item-count").textContent = items.length;
   $("#log-status").textContent = activityLog.length ? "最新紀錄在最上方" : "目前還沒有紀錄";
   $("#activity-log").innerHTML = activityLog.length ? activityLog.map((entry) => `<article class="log-entry"><div class="log-dot"></div><div><strong>${escapeHtml(entry.action)}</strong><p>${escapeHtml(entry.profiles?.display_name || "未知使用者")} (${escapeHtml(entry.profiles?.email || "")}) · ${escapeHtml(entry.detail)}</p></div><time>${new Date(entry.created_at).toLocaleString("zh-TW", { dateStyle: "short", timeStyle: "short" })}</time></article>`).join("") : `<div class="empty-state">還沒有任何操作紀錄。</div>`;
